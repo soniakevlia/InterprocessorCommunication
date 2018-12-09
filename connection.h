@@ -4,8 +4,8 @@ class Connection
 {
     public:
     Connection(int id);
-    void read(); //for clients (children)
-    void write(char* buf); //for host
+    int read(); //for clients (children)
+    void write(const char* str); //for host
     void answer();
     char* buf;
     int id;

@@ -9,6 +9,7 @@
 #include <semaphore.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include <sys/wait.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <fcntl.h>
@@ -19,14 +20,15 @@
 #define CLIENTS_NUM 4
 #define BUFFER_SIZE 80
 
-const char* EXIT_STR = "exit\0";
 Connection* connection[CLIENTS_NUM];
 const char* result[CLIENTS_NUM];
+bool stop = false;
 
 void run_clients(sem_t* main_sem, sem_t** sem);
 void run_host(sem_t* main_sem, sem_t** sem);
 void print_answer(const char* result);
 void unlink(void);
+void close(sem_t* main_sem, sem_t** sem);
 
 int main(void)
 {
@@ -63,7 +65,8 @@ int main(void)
 
     }
 
-    run_clients(main_sem, sem); 
+    run_clients(main_sem, sem);
+    close(main_sem, sem); 
     unlink();
 
     return 0;
@@ -76,41 +79,49 @@ void run_clients(sem_t* main_sem, sem_t** sem){
     for (int i = 0; i < CLIENTS_NUM; i++)
     {
         pid = fork();
-        if(pid == 0)
+        if (pid != 0)
+        {
+  
+            continue;
+        }
+        else //if child
         {          
             while(1)
             {                
                 sem_post(main_sem);
                 sem_wait(sem[i]);
-                connection[i]->read();
+                if (connection[i]->read() == 1)
+                    exit(0);
             }
             exit(0);
         }
 
-    }
+    }    
     run_host(main_sem, sem);
 }
 
 void run_host(sem_t* main_sem, sem_t** sem)
 {
     //Host
-    char str[20];
+    const char *str;
     while(1)
     {
-        str[0] = 0;
-        std::cin >> str;
+        std::string line;
+        std::getline(std::cin, line);
+        str = line.data();
         sem_post(main_sem);      
-        
-        if (strcmp(str, EXIT_STR) == 0)     
-        {       
-            exit(0);
-        }
 
         for (int i = 0; i < CLIENTS_NUM; i++)
         {   
             connection[i]->write(str); 
             sem_post(sem[i]);
-            sem_wait(main_sem);                 
+            sem_wait(main_sem); 
+        }
+        if (strcmp(str, EXIT_STR) == 0) 
+        { 
+            close(main_sem, sem);
+            unlink();
+            exit(0);  
         }
     }
 }
@@ -129,4 +140,15 @@ void unlink(void)
         sem_unlink(str);
     }
 }
+
+void close(sem_t* main_sem, sem_t** sem)
+{
+    char str[20];
+    sem_close(main_sem);
+    for (int i = 0; i < CLIENTS_NUM; i++)
+    {
+       sem_close(sem[i]);
+    }
+}
+
 
