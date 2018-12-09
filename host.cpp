@@ -15,7 +15,7 @@
 #include <fcntl.h>
 #include <string>
 #include <cstdio>
-#include "conn_mmap.cpp"
+#include "conn/conn_mmap.cpp"
 
 #define CLIENTS_NUM 4
 #define BUFFER_SIZE 80
