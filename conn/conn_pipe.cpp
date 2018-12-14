@@ -6,8 +6,9 @@ static int pipe_file_desc[2];
 
 Connection::Connection(int id)
 {
-   this->id = id;
-	if (pipe(pipe_file_desc)) {
+    this->id = id;
+	if (pipe(pipe_file_desc))
+    {
 		syslog(LOG_INFO, "Error piping");
 	}
 }
@@ -18,7 +19,8 @@ int Connection::read_c()
     void* str_buf = (void*)str;
 
  
-    if (read(pipe_file_desc[0], str_buf, BUFFER_SIZE) == -1) {
+    if (read(pipe_file_desc[0], str_buf, BUFFER_SIZE) == -1)
+    {
 		syslog(LOG_INFO, "Error reading");
 		return 1;
 	}
@@ -37,7 +39,8 @@ void Connection::write_s(const char* str)
 {   
     void* str_buf = (void*)str;
 
-	if (write(pipe_file_desc[1], str_buf,  BUFFER_SIZE) == -1) {
+	if (write(pipe_file_desc[1], str_buf,  BUFFER_SIZE) == -1)
+    {
 	    syslog(LOG_INFO, "Error writing");
 	    exit(1);
 	}

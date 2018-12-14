@@ -10,8 +10,8 @@ int Connection::read_c()
 {     
     if (strcmp(this->buf, EXIT_STR) == 0)
         return 1;
-    else
-        printf("id  %d: the answer is: %s\n", this->id, this->buf);
+    
+    printf("id  %d: the answer is: %s\n", this->id, this->buf);
     return 0;
     
 }

@@ -5,7 +5,8 @@ static int shm_file_desc = 0;
 Connection::Connection(int id)
 {
     this->id = id;
-    if ((shm_file_desc = shm_open("/shm", O_CREAT | O_RDWR, S_IRWXU)) == -1) {
+    if ((shm_file_desc = shm_open("/shm", O_CREAT | O_RDWR, S_IRWXU)) == -1)
+    {
 	    syslog(LOG_INFO, "Error opening shm");
     }
 
@@ -34,8 +35,8 @@ int Connection::read_c()
     {
         return 1;
     }
-    else
-        printf("id  %d: the answer is: %s\n", this->id, newStr);
+
+    printf("id  %d: the answer is: %s\n", this->id, newStr);
     return 0;
     
 }
