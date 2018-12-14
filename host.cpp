@@ -1,24 +1,6 @@
-#define _GLIBCXX_USE_CXX11_ABI 1
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <iostream>
-#include <semaphore.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <sys/wait.h>
-#include <string.h>
-#include <sys/mman.h>
-#include <fcntl.h>
-#include <string>
-#include <cstdio>
-#include "conn/conn_mmap.cpp"
+#include "conn/connection.h"
 
 #define CLIENTS_NUM 4
-#define BUFFER_SIZE 80
 
 Connection* connection[CLIENTS_NUM];
 const char* result[CLIENTS_NUM];
@@ -90,7 +72,7 @@ void run_clients(sem_t* main_sem, sem_t** sem){
             {                
                 sem_post(main_sem);
                 sem_wait(sem[i]);
-                if (connection[i]->read() == 1)
+                if (connection[i]->read_c() == 1)
                     exit(0);
             }
             exit(0);
@@ -113,7 +95,7 @@ void run_host(sem_t* main_sem, sem_t** sem)
 
         for (int i = 0; i < CLIENTS_NUM; i++)
         {   
-            connection[i]->write(str); 
+            connection[i]->write_s(str); 
             sem_post(sem[i]);
             sem_wait(main_sem); 
         }
@@ -143,7 +125,6 @@ void unlink(void)
 
 void close(sem_t* main_sem, sem_t** sem)
 {
-    char str[20];
     sem_close(main_sem);
     for (int i = 0; i < CLIENTS_NUM; i++)
     {
