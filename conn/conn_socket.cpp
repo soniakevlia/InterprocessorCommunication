@@ -1,14 +1,13 @@
 #include "connection.h"
 
-#define BUFFER_SIZE 80
-
-static int pipe_file_desc[2];
+static int socket_data[2];
 
 Connection::Connection(int id)
 {
-   this->id = id;
-	if (pipe(pipe_file_desc)) {
-		syslog(LOG_INFO, "Error piping");
+    this->id = id;
+    if (socketpair(AF_UNIX, SOCK_STREAM, 0, socket_data) == -1)
+    {
+		syslog(LOG_INFO, "Error socketpair");
 	}
 }
 
@@ -17,8 +16,8 @@ int Connection::read_c()
     char str[BUFFER_SIZE];	
     void* str_buf = (void*)str;
 
- 
-    if (read(pipe_file_desc[0], str_buf, BUFFER_SIZE) == -1) {
+    if (read(socket_data[0], str_buf, BUFFER_SIZE) == -1)
+    {
 		syslog(LOG_INFO, "Error reading");
 		return 1;
 	}
@@ -37,16 +36,17 @@ void Connection::write_s(const char* str)
 {   
     void* str_buf = (void*)str;
 
-	if (write(pipe_file_desc[1], str_buf,  BUFFER_SIZE) == -1) {
-	    syslog(LOG_INFO, "Error writing");
-	    exit(1);
+	if (write(socket_data[1], str_buf, BUFFER_SIZE) == -1)
+    {
+		syslog(LOG_INFO, "Error writing");
+        exit(1);
 	}
 }
 
 Connection::~Connection()
 {
-    close(pipe_file_desc[0]);
-	close(pipe_file_desc[1]);
+	close(socket_data[0]);
+	close(socket_data[1]);
 }
 
 

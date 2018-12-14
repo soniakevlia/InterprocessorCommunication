@@ -1,19 +1,4 @@
-#include <stdio.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <semaphore.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <string.h>
-#include <cstdio>
-#include <iostream>
-#include <sys/mman.h>
-#include <fcntl.h>
 #include "connection.h"
-
-#define BUFFER_SIZE 80
-
-const char* EXIT_STR = "exit\0";
 
 Connection::Connection(int id)
 {
@@ -21,7 +6,7 @@ Connection::Connection(int id)
    this->buf = (char*)mmap(NULL, BUFFER_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANON, -1, 0);
 }
 
-int Connection::read()
+int Connection::read_c()
 {     
     if (strcmp(this->buf, EXIT_STR) == 0)
         return 1;
@@ -31,12 +16,14 @@ int Connection::read()
     
 }
 
-void Connection::write(const char* str)
+void Connection::write_s(const char* str)
 {   
     strcpy(this->buf, str);
     //printf("id  %d: the string in buffer is: %s\n", this->id, this->buf);   
 }
 
-
+Connection::~Connection() {
+	munmap(this->buf, BUFFER_SIZE);
+}
 
 
