@@ -1,2 +1,2 @@
 # InterprocessorCommunication
-Several of basic examples of IPC.
+Several basic examples of IPC.
